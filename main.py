@@ -1,3 +1,4 @@
+import asyncio
 from typing import Union
 
 from fastapi import FastAPI, File, UploadFile
@@ -13,17 +14,10 @@ from icecream import ic
 
 app = FastAPI()
 
-threshold = 0.9
+threshold = 0.99
 
 
-@app.post("/benford")
-def benford(image: UploadFile):
-    ic(image.content_type)
-    if image.content_type not in ["image/jpeg", "image/png", "image/bmp"]:
-        return {
-            "error": "Unsupported file type. Please upload a JPEG, PNG, or BMP image."
-        }
-
+def processing(image):
     dct_coefficients = dct(image.file)
     if dct_coefficients is None:
         return {"error": "Failed to process the image."}
@@ -41,6 +35,17 @@ def benford(image: UploadFile):
         "goodness_of_fit": abs(goodness_of_fit[0]),
         "anomaly": bool(results),
     }
+
+
+@app.post("/benford")
+async def benford(image: UploadFile):
+    if image.content_type not in ["image/jpeg", "image/png", "image/bmp"]:
+        return {
+            "error": "Unsupported file type. Please upload a JPEG, PNG, or BMP image."
+        }
+
+    result = await asyncio.to_thread(processing, image)
+    return result
 
 
 app.mount("/", StaticFiles(directory="dist", html=True), name="dist")
