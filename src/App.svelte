@@ -1,12 +1,13 @@
 <script lang="ts">
   function handleSubmit(event: Event) {
-    console.log("Button clicked");
-
     const form = event.target as HTMLFormElement;
     const fileInput = form.querySelector(
       'input[type="file"]'
     ) as HTMLInputElement;
     const file = fileInput.files?.[0];
+
+    const anomalyElement = document.getElementById("anomaly")!;
+    const goodnessElement = document.getElementById("goodness")!;
 
     if (file) {
       const formData = new FormData();
@@ -24,6 +25,8 @@
         })
         .then((data) => {
           console.log("Success:", data);
+          anomalyElement.textContent = `Anomaly detected: ${data.anomaly}`;
+          goodnessElement.textContent = `Goodness of fit: ${data.goodness_of_fit}`;
         })
         .catch((error) => {
           console.error("Error:", error);
@@ -43,6 +46,7 @@
   </p>
 
   <!-- Submission form -->
+  <!-- svelte-ignore event_directive_deprecated -->
   <form on:submit|preventDefault={handleSubmit}>
     <label for="image">Upload an image:</label>
     <input
@@ -54,22 +58,7 @@
     />
     <button type="submit">Submit</button>
   </form>
-</main>
 
-<!-- <style>
-  .logo {
-    height: 6em;
-    padding: 1.5em;
-    will-change: filter;
-    transition: filter 300ms;
-  }
-  .logo:hover {
-    filter: drop-shadow(0 0 2em #646cffaa);
-  }
-  .logo.svelte:hover {
-    filter: drop-shadow(0 0 2em #ff3e00aa);
-  }
-  .read-the-docs {
-    color: #888;
-  }
-</style> -->
+  <p id="anomaly"></p>
+  <p id="goodness"></p>
+</main>
